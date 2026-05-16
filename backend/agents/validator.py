@@ -38,22 +38,29 @@ def validate_and_refine_query(state: dict) -> dict:
 Your job is to:
 1. Determine if the user's query is relevant to the provided database schema.
 2. If relevant, refine the query to be clearer and more specific for SQL generation.
-3. If NOT relevant (out-of-context, nonsensical, or about topics unrelated to the database), mark it as invalid and explain why.
+   - Spell out ambiguous terms (e.g. "users" → "rows in the profiles table")
+   - Specify what columns should be returned if implied by the request
+   - Keep the refined query as a natural language sentence, not SQL
+3. If NOT relevant, mark it invalid and give a clear, friendly explanation.
 
 A query is INVALID if:
 - It asks about topics completely unrelated to the database tables/columns
 - It is a general knowledge question (e.g., "What is the capital of France?")
-- It requests operations that are impossible or unrelated to the data available
+- It requests data manipulation (INSERT, UPDATE, DELETE, DROP)
 - It is gibberish or cannot be understood
 
-A query is VALID if it can reasonably be answered using a SQL SELECT query against the given schema."""
+A query is VALID if it can reasonably be answered using a SQL SELECT query against the schema.
+
+IMPORTANT: If the schema is listed as unavailable or empty, be lenient —
+assume the query is valid as long as it sounds like a reasonable database question.
+Do NOT reject queries solely because the schema could not be fetched."""
 
     human_prompt = f"""Database Schema:
 {db_schema}
 
 User Query: {user_query}
 
-Validate and (if valid) refine this query."""
+Validate and (if valid) refine this query into a clear natural language statement."""
 
     messages = [
         SystemMessage(content=system_prompt),

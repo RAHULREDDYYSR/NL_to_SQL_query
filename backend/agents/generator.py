@@ -33,10 +33,17 @@ def generate_sql(state: dict) -> dict:
     client = get_openai_client()
 
     system_prompt = """You are a SQL query generator for PostgreSQL.
-Generate only SELECT queries (no INSERT, UPDATE, DELETE, DROP).
-Use proper PostgreSQL syntax with correct table and column names from the schema.
-When given feedback on a previous attempt, you MUST fix ALL the issues described — do not return the same query.
-Always provide a brief explanation of what the query does."""
+
+Rules:
+- Generate ONLY SELECT queries (never INSERT, UPDATE, DELETE, DROP, TRUNCATE).
+- Use the exact table and column names from the provided schema.
+- If the schema is unavailable or empty, make reasonable assumptions based on the
+  natural language request and use standard naming conventions (e.g. id, name,
+  created_at). Prefer specific columns over SELECT * when the request implies it.
+- Always use proper PostgreSQL syntax (quote identifiers with double quotes if
+  they contain spaces or are reserved words).
+- When given feedback on a previous attempt, you MUST fix ALL the issues described —
+  do not return the same query or a superficially similar one."""
 
     if feedback and previous_sql:
         human_prompt = f"""Database Schema:

@@ -39,25 +39,37 @@ def evaluate_sql(state: dict) -> dict:
     client = get_openai_client()
 
     system_prompt = """You are a SQL query evaluator for PostgreSQL.
-Evaluate the generated SQL query for correctness, schema alignment, and intent match.
-Be strict but fair — only request revision if there is a real issue."""
+Your job is to verify that the generated SQL query correctly answers the original request.
 
-    feedback_context = f"\n\nPrevious feedback:\n{feedback}" if feedback else ""
+Evaluation rules:
+1. SYNTAX — check for valid PostgreSQL syntax.
+2. SCHEMA ALIGNMENT — table and column names must match the schema exactly.
+   EXCEPTION: if the schema is listed as unavailable or empty, do NOT mark the
+   query as needing revision for column/table issues — the generator made its
+   best guess. Only flag real syntax errors in that case.
+3. INTENT MATCH — the query must actually answer what was asked.
+   - If the user asked for specific columns (names, totals, etc.), SELECT * is wrong.
+   - If the user asked for a count, a plain SELECT is wrong.
+4. SAFETY — no DROP, DELETE without WHERE, or destructive operations.
+5. COMPLETENESS — flag missing JOINs or filters only if they clearly change the result.
+
+Mark status 'ok' when the query is correct and complete.
+Mark status 'needs_revision' only when there is a concrete, fixable issue.
+Your feedback must be specific and actionable — state exactly what column/clause to change."""
+
+    current_iteration_display = f" (revision #{current_iteration})" if current_iteration > 0 else ""
 
     human_prompt = f"""Database Schema:
 {db_schema}
 
 Original Request: {refined_query}
 
-Generated SQL:
-{sql_query}{feedback_context}
+Generated SQL{current_iteration_display}:
+```sql
+{sql_query}
+```
 
-Evaluate the SQL. Check for:
-1. Syntax errors
-2. Incorrect table/column names (must match schema exactly)
-3. Intent misalignment with the original request
-4. Missing JOINs where needed
-5. Dangerous operations (no DROP, DELETE without WHERE)"""
+Evaluate the SQL against the checklist above and return your verdict."""
 
     messages = [
         SystemMessage(content=system_prompt),

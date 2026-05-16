@@ -1,18 +1,34 @@
 import streamlit as st
 from backend.workflow import run_nl_to_sql
-from backend.schema import execute_sql
+from backend.schema import execute_sql, get_database_schema
 
-st.set_page_config(page_title="NL to SQL Query Generator", page_icon="🔍")
+st.set_page_config(page_title="NL to SQL Query Generator", page_icon="🔍", layout="wide")
+
+st.markdown("""
+<style>
+    h1, h2, h3 { font-size: 1.6rem !important; margin-bottom: 0.2rem; }
+    .block-container { padding-top: 2rem !important; }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🔍 Natural Language to SQL Query Generator")
-st.markdown("**Agent Mailer Database**")
+
+# ── Sidebar: live schema preview ─────────────────────────────────────────────
+with st.sidebar:
+    st.header("📋 Database Schema")
+    with st.spinner("Fetching schema..."):
+        schema = get_database_schema()
+    if schema.startswith("("):
+        st.warning(schema)
+    else:
+        st.code(schema, language="sql")
 
 if "history" not in st.session_state:
     st.session_state.history = []
 
 user_query = st.text_area(
     "Enter your query in natural language:",
-    placeholder="e.g., Show me all users who have active job applications",
+    placeholder="e.g., Show me all users who signed up last month",
     height=100
 )
 
@@ -87,7 +103,7 @@ if st.session_state.history:
     for idx, item in enumerate(reversed(st.session_state.history[-5:])):
         with st.expander(f"Query {idx + 1}"):
             st.text_area("Natural Language", item["query"], disabled=True, key=f"nl_{idx}")
-            st.code(item["sql"], language="sql", key=f"sql_{idx}")
+            st.code(item["sql"], language="sql")
             if item["result"]["success"]:
                 st.success("Executed successfully")
             else:
