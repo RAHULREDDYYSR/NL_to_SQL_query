@@ -1,0 +1,14 @@
+[project]
+name = "nl-to-sql-query"
+version = "0.1.0"
+description = "Natural Language to SQL Query Generator for Agent Mailer"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "langgraph>=1.2.0",
+    "langchain-openai>=1.2.1",
+    "langchain-core>=1.4.0",
+    "streamlit>=1.57.0",
+    "supabase>=2.30.0",
+    "python-dotenv>=1.2.2",
+]
