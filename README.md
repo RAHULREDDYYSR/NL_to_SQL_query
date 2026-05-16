@@ -36,9 +36,6 @@ Below is the agentic workflow generated using Mermaid. It shows the path from va
 ![Query Validation](demo/image%20copy.png)
 *Description: The Validator Agent protects the system by rejecting out-of-context queries (e.g., sports questions for a fitness database) and providing helpful guidance to the user.*
 
-### Main Interface
-![Main UI](demo/Screenshot%202026-05-16%20140322.png)
-*Description: The primary dashboard showing a successful natural language conversion. It displays the refined query, the total iterations taken (1), the generated SQL, and the evaluation status.*
 
 ### Complex Join Queries
 ![Complex Join](demo/Screenshot%202026-05-16%20141021.png)
@@ -48,11 +45,6 @@ Below is the agentic workflow generated using Mermaid. It shows the path from va
 ![Detailed Query](demo/image.png)
 *Description: The system can handle specific entity lookups, retrieving detailed profiles and filtering by attributes as demonstrated in this query for user details.*
 
-### Query History
-![Query History](demo/Screenshot%202026-05-16%20140537.png)
-*Description: A persistent history of previous queries in the session, allowing users to revisit and compare past results.*
-
----
 
 ## 🛠️ Technical Stack
 - **Framework**: [LangGraph](https://github.com/langchain-ai/langgraph)
